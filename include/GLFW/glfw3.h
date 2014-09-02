@@ -548,6 +548,13 @@ extern "C" {
 #define GLFW_RELEASE_BEHAVIOR_FLUSH 0x00035001
 #define GLFW_RELEASE_BEHAVIOR_NONE  0x00035002
 
+#define GLFW_ARROW_CURSOR           0x00036001
+#define GLFW_IBEAM_CURSOR           0x00036002
+#define GLFW_CROSSHAIR_CURSOR       0x00036003
+#define GLFW_HAND_CURSOR            0x00036004
+#define GLFW_HRESIZE_CURSOR         0x00036005
+#define GLFW_VRESIZE_CURSOR         0x00036006
+
 #define GLFW_CONNECTED              0x00040001
 #define GLFW_DISCONNECTED           0x00040002
 
@@ -2087,7 +2094,7 @@ GLFWAPI void glfwGetCursorPos(GLFWwindow* window, double* xpos, double* ypos);
  */
 GLFWAPI void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos);
 
-/*! @brief Creates a cursor.
+/*! @brief Creates a custom cursor.
  *
  *  Creates a new cursor that can be made the system cursor for a window with
  *  @ref glfwSetCursor.  The cursor can be destroyed with @ref
@@ -2108,6 +2115,24 @@ GLFWAPI void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos);
  *  @ingroup input
  */
 GLFWAPI GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot);
+
+/*! @brief Creates a cursor with a standard shape.
+ *
+ *  Returns a standard cursor that can be made the system cursor for a window
+ *  with @ref glfwSetCursor.
+ *
+ *  @param[in] shape One of `GLFW_ARROW_CURSOR`, `GLFW_IBEAM_CURSOR`,
+ *  `GLFW_CROSSHAIR_CURSOR`, `GLFW_HAND_CURSOR`, `GLFW_HRESIZE_CURSOR` or
+ *  `GLFW_VRESIZE_CURSOR`.
+ *
+ *  @return A new cursor ready to use or `NULL` if an error occurred.  Errors
+ *  are reported to the [error callback](@ref intro_error).
+ *
+ *  @note This function may only be called from the main thread.
+ *
+ *  @ingroup input
+ */
+GLFWAPI GLFWcursor* glfwCreateStandardCursor(int shape);
 
 /*! @brief Destroys a cursor.
  *

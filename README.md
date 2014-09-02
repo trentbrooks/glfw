@@ -48,8 +48,8 @@ GLFW bundles a number of dependencies in the `deps/` directory.
 ## Changelog
 
  - Added `GLFWcursor` custom system cursor handle
- - Added `glfwCreateCursor`, `glfwDestroyCursor` and `glfwSetCursor` for
-   managing custom system cursors
+ - Added `glfwCreateCursor`, `glfwCreateStandardCursor`, `glfwDestroyCursor` and
+   `glfwSetCursor` for managing system cursor images
  - Added `GLFWimage` struct for passing 32-bit RGBA images
  - Added native monitor handle access to native API
  - Added `glfwSetDropCallback` and `GLFWdropfun` for receiving dropped files
