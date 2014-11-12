@@ -357,6 +357,7 @@ static void scroll_callback(GLFWwindow* window, double x, double y)
     Slot* slot = glfwGetWindowUserPointer(window);
     printf("%08x to %i at %0.3f: Scroll: %0.3f %0.3f\n",
            counter++, slot->number, glfwGetTime(), x, y);
+
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -390,6 +391,21 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
             printf("(( closing %s ))\n", slot->closeable ? "enabled" : "disabled");
             break;
         }
+
+		case GLFW_KEY_I:
+			{
+				
+
+				int isIgnoreCursorMask;
+				glfwGetIgnoreCursorMaskingHACK(window, &isIgnoreCursorMask);
+				printf("Is ignoring cursor mask %i\n", isIgnoreCursorMask);
+
+				if(isIgnoreCursorMask == 0) {
+					glfwSetIgnoreCursorMaskingHACK(window, 1);
+				} else {
+					glfwSetIgnoreCursorMaskingHACK(window, 0);
+				}
+			}
     }
 }
 
@@ -566,14 +582,17 @@ int main(int argc, char** argv)
         glfwSetWindowFocusCallback(slots[i].window, window_focus_callback);
         glfwSetWindowIconifyCallback(slots[i].window, window_iconify_callback);
         glfwSetMouseButtonCallback(slots[i].window, mouse_button_callback);
-        glfwSetCursorPosCallback(slots[i].window, cursor_position_callback);
-        glfwSetCursorEnterCallback(slots[i].window, cursor_enter_callback);
+       // glfwSetCursorPosCallback(slots[i].window, cursor_position_callback);
+       // glfwSetCursorEnterCallback(slots[i].window, cursor_enter_callback);
         glfwSetScrollCallback(slots[i].window, scroll_callback);
         glfwSetKeyCallback(slots[i].window, key_callback);
         glfwSetCharCallback(slots[i].window, char_callback);
         glfwSetCharModsCallback(slots[i].window, char_mods_callback);
         glfwSetDropCallback(slots[i].window, drop_callback);
         glfwSetTouchCallback(slots[i].window, touch_callback);
+		
+		glfwSetInputMode(slots[i].window, GLFW_TOUCH, 1);
+
 
         glfwMakeContextCurrent(slots[i].window);
         glfwSwapInterval(1);
