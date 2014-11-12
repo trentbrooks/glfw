@@ -187,6 +187,9 @@ GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height,
     window->next = _glfw.windowListHead;
     _glfw.windowListHead = window;
 
+	// logmein hack
+	window->ignoreCursorMasking = 0;
+
     if (wndconfig.monitor)
     {
         wndconfig.resizable = GL_TRUE;
@@ -447,6 +450,7 @@ GLFWAPI int glfwWindowShouldClose(GLFWwindow* handle)
     return window->closed;
 }
 
+
 GLFWAPI void glfwSetWindowShouldClose(GLFWwindow* handle, int value)
 {
     _GLFWwindow* window = (_GLFWwindow*) handle;
@@ -459,6 +463,21 @@ GLFWAPI void glfwSetWindowTitle(GLFWwindow* handle, const char* title)
     _GLFWwindow* window = (_GLFWwindow*) handle;
     _GLFW_REQUIRE_INIT();
     _glfwPlatformSetWindowTitle(window, title);
+}
+
+// logmein bug fix - get and set
+GLFWAPI void glfwGetIgnoreCursorMaskingHACK(GLFWwindow* handle, int* value)
+{
+    _GLFWwindow* window = (_GLFWwindow*) handle;
+    _GLFW_REQUIRE_INIT();
+	*value = window->ignoreCursorMasking;
+}
+
+GLFWAPI void glfwSetIgnoreCursorMaskingHACK(GLFWwindow* handle, int value)
+{
+    _GLFWwindow* window = (_GLFWwindow*) handle;
+    _GLFW_REQUIRE_INIT();
+	window->ignoreCursorMasking = value;
 }
 
 GLFWAPI void glfwGetWindowPos(GLFWwindow* handle, int* xpos, int* ypos)

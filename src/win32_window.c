@@ -27,6 +27,7 @@
 
 #include "internal.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
@@ -396,6 +397,7 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg,
                                    WPARAM wParam, LPARAM lParam)
 {
     _GLFWwindow* window = (_GLFWwindow*) GetWindowLongPtrW(hWnd, 0);
+	
 
     switch (uMsg)
     {
@@ -583,12 +585,86 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg,
             break;
         }
 
+
+		case WM_TOUCH:
+        {
+			
+            TOUCHINPUT* inputs;
+            UINT count = LOWORD(wParam);
+            if (!_glfw.win32.touch.available)
+                return 0;
+
+            inputs = (TOUCHINPUT*) malloc(sizeof(TOUCHINPUT) * count);
+
+            if (_glfw_GetTouchInputInfo((HTOUCHINPUT) lParam,
+                                        count, inputs, sizeof(TOUCHINPUT)))
+            {
+                int i, width, height, xpos, ypos;
+
+                _glfwPlatformGetWindowSize(window, &width, &height);
+                _glfwPlatformGetWindowPos(window, &xpos, &ypos);
+
+                for (i = 0;  i < count;  i++)
+                {
+                    int action;
+                    POINT pos;
+
+                    pos.x = TOUCH_COORD_TO_PIXEL(inputs[i].x) - xpos;
+                    pos.y = TOUCH_COORD_TO_PIXEL(inputs[i].y) - ypos;
+
+                    // Discard any points that lie outside of the client area
+                    if (pos.x < 0 || pos.x >= width ||
+                        pos.y < 0 || pos.y >= height)
+                    {
+                        continue;
+                    }
+
+                    if (inputs[i].dwFlags & TOUCHEVENTF_DOWN)
+                        action = GLFW_PRESS;
+                    else if (inputs[i].dwFlags & TOUCHEVENTF_UP)
+                        action = GLFW_RELEASE;
+                    else
+                        action = GLFW_MOVE;
+
+                    _glfwInputTouch(window,
+                                    (int) inputs[i].dwID, action,
+                                    inputs[i].x / 100.0 - xpos,
+                                    inputs[i].y / 100.0 - ypos);
+                }
+
+                _glfw_CloseTouchInputHandle((HTOUCHINPUT) lParam);
+            }
+
+            free(inputs);
+			// added: testing a return so only touch events or mouse evnts are processsed (not both)
+			//printf("Done\n");
+			//_glfwInputError(GLFW_PLATFORM_ERROR, "Return from touch event!");
+			return 0;
+            //break;
+        }
+
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
         case WM_XBUTTONDOWN:
         {
+			
             const int mods = getKeyMods();
+
+			//printf("\nmouse down this is %i\n", (int)uMsg);
+			//printf("\nextra : %i", (GetMessageExtraInfo()& 0xFFFFFF0)); // 41365920
+
+			// http://the-witness.net/news/2012/10/wm_touch-is-totally-bananas/
+			// not working for windows 8?
+			//int LOGMEINTOUCH = 41365920;
+			//if((GetMessageExtraInfo()& 0xFFFFFF0) != LOGMEINTOUCH) {
+			if(window->ignoreCursorMasking == 0) {
+				if ((GetMessageExtraInfo() & 0x82) == 0x82) { 
+					// _glfwInputError(GLFW_PLATFORM_ERROR, "Weird touch thingy");
+					return 0; 
+				}
+			}
+			
 
             SetCapture(hWnd);
 
@@ -616,7 +692,24 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg,
         case WM_MBUTTONUP:
         case WM_XBUTTONUP:
         {
+			
+
             const int mods = getKeyMods();
+
+			//printf("\nmouse down this is %i\n", (int)uMsg);
+			//printf("\nextra : %i", (GetMessageExtraInfo()& 0xFFFFFF0)); // 41365920
+		
+			// http://the-witness.net/news/2012/10/wm_touch-is-totally-bananas/
+			// not working for windows 8?
+			//int LOGMEINTOUCH = 41365920;
+			//if((GetMessageExtraInfo()& 0xFFFFFF0) != LOGMEINTOUCH) {
+			if(window->ignoreCursorMasking == 0) {
+				if ((GetMessageExtraInfo() & 0x82) == 0x82) { 
+					// _glfwInputError(GLFW_PLATFORM_ERROR, "Weird touch thingy");
+					return 0; 
+				}
+			}
+			
 
             ReleaseCapture();
 
@@ -735,58 +828,7 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg,
             return 0;
         }
 
-        case WM_TOUCH:
-        {
-            TOUCHINPUT* inputs;
-            UINT count = LOWORD(wParam);
-
-            if (!_glfw.win32.touch.available)
-                return 0;
-
-            inputs = (TOUCHINPUT*) malloc(sizeof(TOUCHINPUT) * count);
-
-            if (_glfw_GetTouchInputInfo((HTOUCHINPUT) lParam,
-                                        count, inputs, sizeof(TOUCHINPUT)))
-            {
-                int i, width, height, xpos, ypos;
-
-                _glfwPlatformGetWindowSize(window, &width, &height);
-                _glfwPlatformGetWindowPos(window, &xpos, &ypos);
-
-                for (i = 0;  i < count;  i++)
-                {
-                    int action;
-                    POINT pos;
-
-                    pos.x = TOUCH_COORD_TO_PIXEL(inputs[i].x) - xpos;
-                    pos.y = TOUCH_COORD_TO_PIXEL(inputs[i].y) - ypos;
-
-                    // Discard any points that lie outside of the client area
-                    if (pos.x < 0 || pos.x >= width ||
-                        pos.y < 0 || pos.y >= height)
-                    {
-                        continue;
-                    }
-
-                    if (inputs[i].dwFlags & TOUCHEVENTF_DOWN)
-                        action = GLFW_PRESS;
-                    else if (inputs[i].dwFlags & TOUCHEVENTF_UP)
-                        action = GLFW_RELEASE;
-                    else
-                        action = GLFW_MOVE;
-
-                    _glfwInputTouch(window,
-                                    (int) inputs[i].dwID, action,
-                                    inputs[i].x / 100.0 - xpos,
-                                    inputs[i].y / 100.0 - ypos);
-                }
-
-                _glfw_CloseTouchInputHandle((HTOUCHINPUT) lParam);
-            }
-
-            free(inputs);
-            break;
-        }
+        // was here 9touch)
 
         case WM_PAINT:
         {
@@ -1324,7 +1366,7 @@ void _glfwPlatformSetTouchInput(_GLFWwindow* window, int enabled)
         return;
 
     if (enabled)
-        _glfw_RegisterTouchWindow(window->win32.handle, 0);
+        _glfw_RegisterTouchWindow(window->win32.handle, 0);//0x00000002); // changed from 0
     else
         _glfw_UnregisterTouchWindow(window->win32.handle);
 }

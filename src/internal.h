@@ -229,6 +229,9 @@ struct _GLFWwindow
     _GLFWmonitor*       monitor;
     _GLFWcursor*        cursor;
 
+	// custom windows 7 logme in mouse cursor touch hack
+	int ignoreCursorMasking;
+
     // Window input state
     GLboolean           stickyKeys;
     GLboolean           stickyMouseButtons;
